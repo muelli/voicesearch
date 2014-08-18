@@ -59,10 +59,12 @@ class VoiceSearch(Gtk.Application):
         
         self.data = None # Will be filled later with the data from the reader
         self.reader = None
+        
+        self.sample_freq = 16000
 
         self.pipeline = ' ! '.join((
             'pulsesrc',
-            'audio/x-raw, rate=44100',
+            'audio/x-raw, rate=%d' % self.sample_freq,
             #'level, message=true',
             'flacenc',
 
