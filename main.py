@@ -70,6 +70,7 @@ class VoiceSearch(Gtk.Application):
         self.gst = Gst.parse_launch(pipeline)
         fdsink = self.gst.get_by_name('fdsink')
         
+        self.data = None # Will be filled later with the data from the reader
         self.reader = reader = FDBuffer()
         self.reader.start()
         fd = reader.write_fd
@@ -129,8 +130,9 @@ class VoiceSearch(Gtk.Application):
 
 
     def stop_buffer(self, *args, **kwargs):
-        self.reader.close()
         self.log.info("Recorded %d bytes", self.reader.buffer.len)
+        self.data = self.reader.buffer.getvalue()
+        self.reader.close()
         return False
 
 
