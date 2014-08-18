@@ -57,7 +57,10 @@ class VoiceSearch(Gtk.Application):
         
         self.log = logging.getLogger()
         
-        pipeline = ' ! '.join((
+        self.data = None # Will be filled later with the data from the reader
+        self.reader = None
+
+        self.pipeline = ' ! '.join((
             'pulsesrc',
             'audio/x-raw, rate=44100',
             #'level, message=true',
@@ -66,18 +69,23 @@ class VoiceSearch(Gtk.Application):
             #'filesink location=/tmp/f.flac',
             'fdsink name=fdsink',
         ))
+
+        
+
+    def launch_pipeline(self):
+        pipeline = self.pipeline
         self.log.debug("Creating pipeline: %s", pipeline)
         self.gst = Gst.parse_launch(pipeline)
         fdsink = self.gst.get_by_name('fdsink')
-        
-        self.data = None # Will be filled later with the data from the reader
+
         self.reader = reader = FDBuffer()
-        self.reader.start()
+        reader.start()
         fd = reader.write_fd
         self.log.debug('Reader %s has fd %s', reader, fd)
         #fdsink.fd = fd
         fdsink.set_property("fd", fd)
         self.log.info("fdsink has fd: %d", fdsink.get_property("fd"))
+
         self.bus = self.gst.get_bus()
         self.bus.connect('message', self.on_message)
         self.bus.add_signal_watch()
@@ -120,6 +128,7 @@ class VoiceSearch(Gtk.Application):
 
 
     def start_recording(self, *args, **kwargs):
+        self.launch_pipeline()
         self.gst.set_state(Gst.State.PLAYING)
         return False
 
