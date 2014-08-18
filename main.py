@@ -109,7 +109,16 @@ class VoiceSearch(Gtk.Application):
             #image=image,
             )
         self.button.connect('toggled', self.on_toggled)
-        self.window.add(self.button)
+        
+        
+        self.entry = Gtk.Entry()
+        self.entry.set_text ('Results will hopefully show up here')
+        
+        
+        box = Gtk.VBox()
+        box.add(self.button)
+        box.add(self.entry)
+        self.window.add(box)
 
 
     def on_activate(self, app):
@@ -163,6 +172,15 @@ class VoiceSearch(Gtk.Application):
         req = urllib2.Request(url, data, header)
         raw_data = urllib2.urlopen(req).read()
         self.log.info('Retrieved %s', raw_data)
+        
+        GLib.idle_add(self.retrieved_results, raw_data)
+        
+        return False
+
+
+    def retrieved_results(self, data):
+        # We probably want to parse a little here
+        self.entry.set_text(data)
         return False
 
 def main():
