@@ -28,8 +28,8 @@ class VoiceSearch(Gtk.Application):
         self.log.debug("Creating pipeline: %s", pipeline)
         self.gst = Gst.parse_launch(pipeline)
         self.bus = self.gst.get_bus()
-        #self.bus.connect('message', self.on_message)
-        
+        self.bus.connect('message', self.on_message)
+        self.bus.add_signal_watch()
 
 
     def on_startup(self, app):
@@ -73,6 +73,11 @@ class VoiceSearch(Gtk.Application):
         self.gst.set_state(Gst.State.NULL)
     
         return False
+
+
+    def on_message(self, message, data):
+        self.log.info("Received message %s with data %s", message, data)
+
 
 def main():
     vs = VoiceSearch()
