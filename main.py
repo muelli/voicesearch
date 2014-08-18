@@ -18,7 +18,14 @@ class VoiceSearch(Gtk.Application):
         
         self.log = logging.getLogger()
         
-        pipeline = 'pulsesrc ! audio/x-raw, rate=44100 ! flacenc ! filesink location=/tmp/f.flac'
+        pipeline = ' ! '.join((
+            'pulsesrc',
+            'audio/x-raw, rate=44100',
+            #'level, message=true',
+            'flacenc',
+            'filesink location=/tmp/f.flac'
+        ))
+        self.log.debug("Creating pipeline: %s", pipeline)
         self.gst = Gst.parse_launch(pipeline)
         self.bus = self.gst.get_bus()
         #self.bus.connect('message', self.on_message)
