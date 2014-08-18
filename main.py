@@ -4,6 +4,7 @@ import logging
 import os
 from StringIO import StringIO
 import sys
+import urllib2
 from threading import Thread
 
 from gi.repository import Gtk, GLib
@@ -124,6 +125,8 @@ class VoiceSearch(Gtk.Application):
             def cb():
                 self.stop_recording()
                 self.stop_buffer()
+                data = self.data
+                GLib.idle_add(self.post_data, data)
                 return False
             GLib.idle_add(cb)
             print("Off")
@@ -150,6 +153,17 @@ class VoiceSearch(Gtk.Application):
     def on_message(self, message, data):
         self.log.info("Received message %s with data %s", message, data)
 
+
+    def post_data(self, data):
+        """This function does not really belong here..."""
+        url = "https://www.google.com/speech-api/v2/recognize?output=json&lang=en-gb&key=AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw&results=6&pfilter=2"
+        header = {'Content-Type' : 'audio/x-flac; rate=%d' % self.sample_freq}
+        self.log.debug("Posting data to %s (%d)", url, len(data))
+        file('/tmp/f.flac', 'w').write(data)
+        req = urllib2.Request(url, data, header)
+        raw_data = urllib2.urlopen(req).read()
+        self.log.info('Retrieved %s', raw_data)
+        return False
 
 def main():
     vs = VoiceSearch()
