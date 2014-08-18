@@ -84,5 +84,6 @@ def main():
     return vs.run()
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     Gst.init()
     sys.exit(main())
