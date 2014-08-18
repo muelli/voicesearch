@@ -4,6 +4,8 @@ import logging
 import sys
 
 from gi.repository import Gtk, GLib
+from gi.repository import Gst
+
 
 class VoiceSearch(Gtk.Application):
     
@@ -15,6 +17,12 @@ class VoiceSearch(Gtk.Application):
         self.connect("startup", self.on_startup)
         
         self.log = logging.getLogger()
+        
+        pipeline = 'pulsesrc ! audio/x-raw, rate=44100 ! flacenc ! filesink location=/tmp/f.flac'
+        self.gst = Gst.parse_launch(pipeline)
+        self.bus = self.gst.get_bus()
+        #self.bus.connect('message', self.on_message)
+        
 
 
     def on_startup(self, app):
@@ -43,13 +51,26 @@ class VoiceSearch(Gtk.Application):
     def on_toggled(self, button):
         if button.get_active():
             print("On")
+            GLib.idle_add(self.start_recording)
         else:
+            GLib.idle_add(self.stop_recording)
             print("Off")
 
+
+    def start_recording(self, *args, **kwargs):
+        self.gst.set_state(Gst.State.PLAYING)
+        return False
+
+
+    def stop_recording(self, *args, **kwargs):
+        self.gst.set_state(Gst.State.NULL)
+    
+        return False
 
 def main():
     vs = VoiceSearch()
     return vs.run()
 
 if __name__ == '__main__':
+    Gst.init()
     sys.exit(main())
